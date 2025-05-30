@@ -2,15 +2,10 @@ using UnityEngine;
 
 public class CoinRotate : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public float rotationSpeed = 90f;
 
-    // Update is called once per frame
     void Update()
     {
-        
+        transform.Rotate(Vector3.forward, rotationSpeed * Time.deltaTime);
     }
 }
