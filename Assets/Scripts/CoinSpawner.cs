@@ -12,7 +12,7 @@ public class CoinSpawner : MonoBehaviour
         for (int i = 0; i < numberOfCoins; i++)
         {
             Vector3 spawnPosition = new Vector3(Random.Range(-areaSize.x / 2f, areaSize.x / 2f), 0.5f, Random.Range(-areaSize.z / 2f, areaSize.z / 2f));
-            Instantiate(coinPrefab, spawnPosition, Quaternion.Euler(90, 0, 0));
+            Instantiate(coinPrefab, spawnPosition, Quaternion.identity);
         }
     }
 
