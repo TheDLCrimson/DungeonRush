@@ -7,10 +7,19 @@ public class EnemyMovement : MonoBehaviour
     public Transform player;
     public LayerMask whatIsGround, whatIsPlayer;
 
+    public enum EnemyState { Patrol, Chase, Attack }
+    public EnemyState currentState;
+
+    private Vector3 patrolPosition;
+
     // Patroling
     public Vector3 walkPoint;
     bool walkPointSet;
     public float walkPointRange;
+    public float patrolSpeed;
+
+    // Chasing
+    public float chaseSpeed;
 
     // Attacking
     public float timeBetweenAttacks;
@@ -24,6 +33,8 @@ public class EnemyMovement : MonoBehaviour
     {
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
+        currentState = EnemyState.Patrol;
+        patrolPosition = transform.position;
     }
 
 
@@ -32,14 +43,34 @@ public class EnemyMovement : MonoBehaviour
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
         playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
 
-        if (!playerInSightRange && !playerInAttackRange) Patroling();
-        if (playerInSightRange && !playerInAttackRange) ChasePlayer();
-        if (playerInAttackRange && playerInSightRange) AttackPlayer();
+        switch (currentState)
+        {
+            case EnemyState.Patrol:
+                Patroling();
+
+                if (playerInSightRange) currentState = EnemyState.Chase;
+                break;
+
+            case EnemyState.Chase:
+                ChasePlayer();
+
+                if (playerInAttackRange) currentState = EnemyState.Attack;
+                else if (!playerInSightRange) currentState = EnemyState.Patrol;
+                break;
+
+            case EnemyState.Attack:
+                AttackPlayer();
+
+                if (!playerInAttackRange) currentState = EnemyState.Chase;
+                break;
+        }
 
     }
 
     private void Patroling()
     {
+        agent.speed = patrolSpeed;
+
         if (!walkPointSet) SearchWalkPoint();
 
         if (walkPointSet)
@@ -56,7 +87,7 @@ public class EnemyMovement : MonoBehaviour
         float randomZ = Random.Range(-walkPointRange, walkPointRange);
         float randomX = Random.Range(-walkPointRange, walkPointRange);
 
-        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
+        walkPoint = patrolPosition + new Vector3(randomX, 0, randomZ);
 
         if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
             walkPointSet = true;
@@ -64,6 +95,7 @@ public class EnemyMovement : MonoBehaviour
 
     private void ChasePlayer()
     {
+        agent.speed = chaseSpeed;
         agent.SetDestination(player.position);
     }
 
